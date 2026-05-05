@@ -40,13 +40,47 @@ public class Character : MonoBehaviour
     private Vector3 jumpVelocity;
     private Vector3 platformVelocity;
 
+    private Animator animator;
+
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip footstepsClip;
+    [SerializeField] private AudioClip jumpClip;
+
     private void Start() {
         this.controller = this.GetComponent<CharacterController>();
+        this.animator= this.GetComponent<Animator>();
+        this.audioSource = this.GetComponent<AudioSource>();
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
         this.currentHealth = this.maxHealth;
         this.jumpCooldownTimer = 0.0f;
     }
+
+    void HandleSounds(Vector2 inputMovement)
+    {
+        bool isWalking = inputMovement != Vector2.zero && this.controller.isGrounded;
+        if (isWalking)
+        {
+            if (!this.audioSource.isPlaying)
+            {
+                this.audioSource.clip = this.footstepsClip;
+                this.audioSource.loop = true;
+                this.audioSource.Play();
+            }
+        }
+        else
+        {
+            this.audioSource.Stop();
+        }
+    }
+
+    void SetAnimationState(Vector2 inputMovement) 
+    {
+        this.animator.SetBool("IsJumping", this.isJumping);
+        this.animator.SetBool("IsRunning", inputMovement != Vector2.zero);
+        this.animator.SetFloat("MovementForward", inputMovement.magnitude);
+    }
+
 
     public void InflictDamage(float amount)
     {
@@ -66,6 +100,7 @@ public class Character : MonoBehaviour
             this.jumpVelocity.y = this.jumpSpeed;
             this.jumpCooldownTimer = this.jumpCooldown;
             this.isJumping = true;
+            this.audioSource.PlayOneShot(this.jumpClip);
         }
         if(this.jumpVelocity.y > 0.0f) {
             this.jumpVelocity.y -= Time.fixedDeltaTime;
@@ -125,8 +160,10 @@ public class Character : MonoBehaviour
     {
 
         this.HandleJumping();
+        
         var inputMovement = this.moveAction.ReadValue<Vector2>();
-
+        this.SetAnimationState(inputMovement);
+        this.HandleSounds(inputMovement);
         var inputRightDirection = this.cameraTransform.right;
         var inputForwardDirection = this.cameraTransform.forward;
 
