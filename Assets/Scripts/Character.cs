@@ -3,6 +3,10 @@ using UnityEngine.InputSystem;
 
 public class Character : MonoBehaviour
 {
+    [SerializeField] private float maxHealth = 100.0f;
+    private float currentHealth;
+    public float GetCurrentHealth() => this.currentHealth;
+    public float GetMaxHealth() => this.maxHealth;
     private bool isJumping = false;
     
     private float jumpCooldownTimer;
@@ -40,7 +44,14 @@ public class Character : MonoBehaviour
         this.controller = this.GetComponent<CharacterController>();
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
+        this.currentHealth = this.maxHealth;
         this.jumpCooldownTimer = 0.0f;
+    }
+
+    public void InflictDamage(float amount)
+    {
+        this.currentHealth -= amount;
+        this.currentHealth = Mathf.Clamp(this.currentHealth, 0.0f, this.maxHealth);
     }
 
     void HandleJumping()
