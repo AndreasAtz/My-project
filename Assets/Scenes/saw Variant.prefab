@@ -116,6 +116,8 @@ MonoBehaviour:
   spinAxis: {x: 0, y: 0, z: 1}
   idleSound: {fileID: 8300000, guid: bde9ef9324c7ec040b1b5e1367c9cf91, type: 3}
   CuttingSound: {fileID: 8300000, guid: 2f856a8b39ec2ce4692ce55eaa76fceb, type: 3}
+  damageAmount: 20
+  damageInterval: 0.75
 --- !u!82 &6613464814005526067
 AudioSource:
   m_ObjectHideFlags: 0

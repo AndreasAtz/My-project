@@ -16,6 +16,10 @@ public class Coin : MonoBehaviour
         return;
 
         coinCollectAudioSource.Play();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.CollectCoin();
+        }
 
         Destroy(gameObject);
     }

@@ -2,23 +2,17 @@ using UnityEngine;
 
 public class RespawnTrigger : MonoBehaviour
 {
-    [SerializeField]
-    private Transform respawnPoint;
-
     void OnTriggerEnter(Collider other)
     {
-        CharacterController cc = other.gameObject.GetComponent<CharacterController>();
+        Character character = other.gameObject.GetComponent<Character>();
         
-        if (cc != null)
+        if (character != null)
         {
-            Respawn(cc);
+            character.SetHealthToZero();
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.ShowGameOver();
+            }
         }
-    }
-
-    void Respawn(CharacterController cc)
-    {
-        cc.enabled = false;
-        cc.gameObject.transform.position = respawnPoint.position;
-        cc.enabled = true;
     }
 }

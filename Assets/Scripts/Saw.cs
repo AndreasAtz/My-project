@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Saw : MonoBehaviour
@@ -12,23 +11,28 @@ public class Saw : MonoBehaviour
     [SerializeField] private AudioClip idleSound;
     [SerializeField] private AudioClip CuttingSound;
 
-    [Header("Particles")]
+    [Header("Damage")]
+    [SerializeField] private float damageAmount = 20.0f;
+    [SerializeField] private float damageInterval = 0.75f;
+
     private AudioSource audioSource;
     private bool isCutting = false;
-
-    
-
+    private Character characterInSaw;
+    private float damageTimer;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
-        audioSource.loop = true;
-        audioSource.playOnAwake = true;
+        if (audioSource != null)
+        {
+            audioSource.loop = true;
+            audioSource.playOnAwake = true;
+        }
     }
 
     private void Start()
     {
-        if(idleSound != null)
+        if(audioSource != null && idleSound != null)
         {
             audioSource.clip = idleSound;
             audioSource.Play();
@@ -37,17 +41,32 @@ public class Saw : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        Character character = other.GetComponent<Character>();
+        if (character != null)
         {
+            characterInSaw = character;
+            damageTimer = 0.0f;
+            DamageCharacter();
             SetState(true);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        Character character = other.GetComponent<Character>();
+        if (character != null && character == characterInSaw)
         {
+            characterInSaw = null;
             SetState(false);
+        }
+    }
+    
+    private void OnTriggerStay(Collider other)
+    {
+        Character character = other.GetComponent<Character>();
+        if (character != null)
+        {
+            characterInSaw = character;
         }
     }
 
@@ -59,18 +78,46 @@ public class Saw : MonoBehaviour
         if (newState)
         {
             isCutting = true;
-            audioSource.clip = CuttingSound;
-            audioSource.Play();
+            if (audioSource != null && CuttingSound != null)
+            {
+                audioSource.clip = CuttingSound;
+                audioSource.Play();
+            }
         } else
         {
             isCutting = false;
-            audioSource.clip = idleSound;
-            audioSource.Play();
+            if (audioSource != null && idleSound != null)
+            {
+                audioSource.clip = idleSound;
+                audioSource.Play();
+            }
         }
     }
 
     private void Update()
     {
         transform.Rotate(spinAxis, spinSpeed * Time.deltaTime);
+
+        if (characterInSaw == null)
+        {
+            return;
+        }
+
+        damageTimer -= Time.deltaTime;
+        if (damageTimer <= 0.0f)
+        {
+            DamageCharacter();
+        }
     } 
+
+    private void DamageCharacter()
+    {
+        if (characterInSaw == null)
+        {
+            return;
+        }
+
+        characterInSaw.InflictDamage(damageAmount);
+        damageTimer = damageInterval;
+    }
 }

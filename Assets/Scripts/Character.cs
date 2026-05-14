@@ -7,6 +7,7 @@ public class Character : MonoBehaviour
     private float currentHealth;
     public float GetCurrentHealth() => this.currentHealth;
     public float GetMaxHealth() => this.maxHealth;
+    public bool IsDead => this.currentHealth <= 0.0f;
     private bool isJumping = false;
     private bool jumpPressed = false;
     
@@ -96,6 +97,37 @@ public class Character : MonoBehaviour
         this.currentHealth = Mathf.Clamp(this.currentHealth, 0.0f, this.maxHealth);
     }
 
+    public void RestoreFullHealth()
+    {
+        this.currentHealth = this.maxHealth;
+    }
+
+    public void SetHealthToZero()
+    {
+        this.currentHealth = 0.0f;
+    }
+
+    public void RespawnAt(Transform respawnPoint)
+    {
+        if (respawnPoint == null)
+        {
+            return;
+        }
+
+        this.controller.enabled = false;
+        this.transform.position = respawnPoint.position;
+        this.transform.rotation = respawnPoint.rotation;
+        this.controller.enabled = true;
+
+        this.characterMovement = Vector3.zero;
+        this.characterGravity = Vector3.zero;
+        this.jumpVelocity = Vector3.zero;
+        this.platformVelocity = Vector3.zero;
+        this.isJumping = false;
+        this.jumpPressed = false;
+        this.RestoreFullHealth();
+    }
+
     void HandleJumping()
     {
         if (this.controller.isGrounded && this.isJumping && this.jumpCooldownTimer <= 0.0f) {
@@ -164,6 +196,17 @@ public class Character : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (this.IsDead)
+        {
+            this.characterMovement = Vector3.zero;
+            this.jumpVelocity = Vector3.zero;
+            this.platformVelocity = Vector3.zero;
+            this.jumpPressed = false;
+            this.SetAnimationState(Vector2.zero);
+            this.HandleSounds(Vector2.zero);
+            return;
+        }
+
         this.HandleJumping();
         
         var inputMovement = this.moveAction.ReadValue<Vector2>();
